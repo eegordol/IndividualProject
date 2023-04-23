@@ -44,18 +44,10 @@ public class Application implements Consumer<Event> {
         FILE
     }
     /**
-     * Панель выбора файла
-     */
-    private final PanelSelectFile panelSelectFile;
-
-    /**
      * Текущий режим(по умолчанию рабочий)
      */
     public static Mode currentMode = Mode.WORK;
-    /**
-     * окно приложения
-     */
-    private final Window window;
+
     /**
      * отступ приложения
      */
@@ -69,6 +61,14 @@ public class Application implements Consumer<Event> {
      */
     public static final KeyModifier MODIFIER = Platform.CURRENT == Platform.MACOS ? KeyModifier.MAC_COMMAND : KeyModifier.CONTROL;
 
+    /**
+     * окно приложения
+     */
+    private final Window window;
+    /**
+     * Панель выбора файла
+     */
+    private final PanelSelectFile panelSelectFile;
     /**
      * панель легенды
      */
