@@ -14,7 +14,6 @@ import misc.Vector2i;
 import panels.PanelLog;
 
 import java.util.ArrayList;
-import java.util.concurrent.ThreadLocalRandom;
 
 import static app.Colors.*;
 
@@ -35,15 +34,7 @@ public class Task {
     /**
      * Список точек в пересечении
      */
-    @Getter
-    @JsonIgnore
-    private final ArrayList<Point> crossed;
-    /**
-     * Список точек в разности
-     */
-    @Getter
-    @JsonIgnore
-    private final ArrayList<Point> single;
+
     /**
      * Флаг, решена ли задача
      */
@@ -52,7 +43,8 @@ public class Task {
      * Очистить задачу
      */
     public void clear() {
-        points.clear();
+        circles.clear();
+        rays.clear();
         solved = false;
     }
     /**
@@ -67,34 +59,15 @@ public class Task {
      * Решить задачу
      */
     public void solve() {
-        // очищаем списки
-        crossed.clear();
-        single.clear();
-
         // перебираем пары точек
-        for (int i = 0; i < points.size(); i++) {
-            for (int j = i + 1; j < points.size(); j++) {
-                // сохраняем точки
-                Point a = points.get(i);
-                Point b = points.get(j);
-                // если точки совпадают по положению
-                if (a.pos.equals(b.pos) && !a.pointSet.equals(b.pointSet)) {
-                    if (!crossed.contains(a)){
-                        crossed.add(a);
-                        crossed.add(b);
-                    }
-                }
+        for (int i = 0; i < circles.size(); i++) {
+            for (int j = i + 1; j < rays.size(); j++) {
+                // TODO
             }
         }
-
-        /// добавляем вс
-        for (Point point : points)
-            if (!crossed.contains(point))
-                single.add(point);
-
         solved = true;
-
     }
+
     /**
      * Отмена решения задачи
      */
@@ -118,10 +91,17 @@ public class Task {
     @Getter
     private final CoordinateSystem2d ownCS;
     /**
-     * Список точек
+     * список окржностей
      */
     @Getter
-    private final ArrayList<Point> points;
+    private final ArrayList<Circle> circles;
+
+    /**
+     * список лучей
+     */
+    @Getter
+    private final ArrayList<Ray> rays;
+
     /**
      * Размер точки
      */
@@ -135,34 +115,22 @@ public class Task {
      * Задача
      *
      * @param ownCS  СК задачи
-     * @param points массив точек
+     * @param circles массив окружностей
      */
     @JsonCreator
     public Task(
             @JsonProperty("ownCS") CoordinateSystem2d ownCS,
-            @JsonProperty("points") ArrayList<Point> points
+            @JsonProperty("circles") ArrayList<Circle> circles,
+            @JsonProperty("rays") ArrayList<Ray> rays
     ) {
         this.ownCS = ownCS;
-        this.points = points;
-        this.crossed = new ArrayList<>();
-        this.single = new ArrayList<>();
-
+        this.circles = circles;
+         this.rays = rays;
     }
 
    /**    * Рисование
 
-    /**
-     * Добавить точку
-     *
-     * @param pos      положение
-     * @param pointSet множество
-     */
-    public void addPoint(Vector2d pos, Point.PointSet pointSet) {
-        solved = false;
-        Point newPoint = new Point(pos, pointSet);
-        points.add(newPoint);
-        PanelLog.info("точка " + newPoint + " добавлена в " + newPoint.getSetName());
-    }
+
 
 
     /**
@@ -177,18 +145,19 @@ public class Task {
         Vector2d taskPos = ownCS.getCoords(pos, lastWindowCS);
         // если левая кнопка мыши, добавляем в первое множество
         if (mouseButton.equals(MouseButton.PRIMARY)) {
-            addPoint(taskPos, Point.PointSet.FIRST_SET);
+           // addPoint(taskPos, Point.PointSet.FIRST_SET);
             // если правая, то во второе
         } else if (mouseButton.equals(MouseButton.SECONDARY)) {
-            addPoint(taskPos, Point.PointSet.SECOND_SET);
+            //addPoint(taskPos, Point.PointSet.SECOND_SET);
         }
     }
+
     /**
-     * Добавить случайные точки
+     * Добавить случайные объекты
      *
      * @param cnt кол-во случайных точек
      */
-    public void addRandomPoints(int cnt) {
+    public void addRandomObjects(int cnt) {
         // если создавать точки с полностью случайными координатами,
         // то вероятность того, что они совпадут крайне мала
         // поэтому нужно создать вспомогательную малую целочисленную ОСК
@@ -201,16 +170,27 @@ public class Task {
         // повторяем заданное количество раз
         for (int i = 0; i < cnt; i++) {
             // получаем случайные координаты на решётке
-            Vector2i gridPos = addGrid.getRandomCoords();
+            Vector2i gridPos1 = addGrid.getRandomCoords();
+            Vector2i gridPos2 = addGrid.getRandomCoords();
             // получаем координаты в СК задачи
-            Vector2d pos = ownCS.getCoords(gridPos, addGrid);
+            Vector2d pos1 = ownCS.getCoords(gridPos1, addGrid);
+            Vector2d pos2 = ownCS.getCoords(gridPos2, addGrid);
             // сработает примерно в половине случаев
-            if (ThreadLocalRandom.current().nextBoolean())
-                addPoint(pos, Point.PointSet.FIRST_SET);
-            else
-                addPoint(pos, Point.PointSet.SECOND_SET);
+            addRay(pos1, pos2);
+        }
+
+        for (int i = 0; i < cnt; i++) {
+            // получаем случайные координаты на решётке
+            Vector2i gridPos1 = addGrid.getRandomCoords();
+            Vector2i gridPos2 = addGrid.getRandomCoords();
+            // получаем координаты в СК задачи
+            Vector2d pos1 = ownCS.getCoords(gridPos1, addGrid);
+            Vector2d pos2 = ownCS.getCoords(gridPos2, addGrid);
+            // сработает примерно в половине случаев
+            addCircle(pos1, pos2);
         }
     }
+
     /**
      * Рисование сетки
      *
@@ -258,18 +238,26 @@ public class Task {
         canvas.save();
         // создаём перо
         try (var paint = new Paint()) {
-            for (Point p : points) {
-                if (!solved) {
-                    paint.setColor(p.getColor());
-                } else {
-                    if (crossed.contains(p))
-                        paint.setColor(CROSSED_COLOR);
-                    else
-                        paint.setColor(SUBTRACTED_COLOR);
-                }
+            for (Ray ray : rays) {
+                paint.setColor(RAY_COLOR);
+
                 // y-координату разворачиваем, потому что у СК окна ось y направлена вниз,
                 // а в классическом представлении - вверх
-                Vector2i windowPos = windowCS.getCoords(p.pos.x, p.pos.y, ownCS);
+                Vector2i windowPos1 = windowCS.getCoords(ray.getP1().x, ray.getP1().y, ownCS);
+                // рисуем точку
+                canvas.drawRect(Rect.makeXYWH(windowPos1.x - POINT_SIZE, windowPos1.y - POINT_SIZE, POINT_SIZE * 2, POINT_SIZE * 2), paint);
+
+                Vector2i windowPos2 = windowCS.getCoords(ray.getP2().x, ray.getP2().y, ownCS);
+                // рисуем точку
+                canvas.drawRect(Rect.makeXYWH(windowPos2.x - POINT_SIZE, windowPos2.y - POINT_SIZE, POINT_SIZE * 2, POINT_SIZE * 2), paint);
+            }
+
+            for (Circle circle : circles) {
+                paint.setColor(CIRCLE_COLOR);
+
+                // y-координату разворачиваем, потому что у СК окна ось y направлена вниз,
+                // а в классическом представлении - вверх
+                Vector2i windowPos = windowCS.getCoords(circle.getCenter().x, circle.getCenter().y, ownCS);
                 // рисуем точку
                 canvas.drawRect(Rect.makeXYWH(windowPos.x - POINT_SIZE, windowPos.y - POINT_SIZE, POINT_SIZE * 2, POINT_SIZE * 2), paint);
             }
@@ -343,11 +331,17 @@ public class Task {
     }
 
 
-    public void AddRay(Vector2d p1, Vector2d p2) {
-
+    public void addRay(Vector2d p1, Vector2d p2) {
+        solved = false;
+        Ray ray = new Ray(p1, p2);
+        rays.add(ray);
+        PanelLog.info("луч " + ray + " добавлена");
     }
 
-    public void AddCircle(Vector2d center, Vector2d point) {
-
+    public void addCircle(Vector2d center, Vector2d point) {
+        solved = false;
+        Circle circle = new Circle(center, point);
+        circles.add(circle);
+        PanelLog.info("окружность " + circle + " добавлена");
     }
 }

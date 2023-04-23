@@ -2,7 +2,6 @@ package panels;
 
 import app.ObjectType;
 import controls.Button;
-import app.Point;
 import app.Task;
 import controls.Input;
 import controls.InputFactory;
@@ -69,8 +68,8 @@ public class PanelControl extends GridPanel {
             var p2 = new Vector2d(x2Field.doubleValue(), y2Field.doubleValue());
 
             switch (objectType){
-                case RAY -> PanelRendering.task.AddRay(p1, p2);
-                case CIRCLE -> PanelRendering.task.AddCircle(p1, p2);
+                case RAY -> PanelRendering.task.addRay(p1, p2);
+                case CIRCLE -> PanelRendering.task.addCircle(p1, p2);
             }
         }
 
@@ -165,14 +164,14 @@ public class PanelControl extends GridPanel {
 
         Button addPoints = new Button(
                 window, false, backgroundColor, PANEL_PADDING,
-                localGridWidth, localGridHeight, 3, 5, 3, 1, "Добавить\nслучайные точки",
+                localGridWidth, localGridHeight, 3, 5, 3, 1, "Добавить\nслучайные объекты",
                 true, true);
         addPoints.setOnClick(() -> {
             // если числа введены верно
             if (!cntField.hasValidIntValue()) {
                 PanelLog.warning("кол-во точек указано неверно");
             } else
-                PanelRendering.task.addRandomPoints(cntField.intValue());
+                PanelRendering.task.addRandomObjects(cntField.intValue());
         });
         buttons.add(addPoints);
         // управление
@@ -207,11 +206,8 @@ public class PanelControl extends GridPanel {
         solve.setOnClick(() -> {
             if (!PanelRendering.task.isSolved()) {
             PanelRendering.task.solve();
-                String s = "Задача решена\n" +
-                        "Пересечений: " + PanelRendering.task.getCrossed().size() / 2 + "\n" +
-                        "Отдельных точек: " + PanelRendering.task.getSingle().size();
-                PanelInfo.show(s + "\n\nНажмите Esc, чтобы вернуться");
-                PanelLog.success(s);
+                // TODO
+                PanelInfo.show("Нажмите Esc, чтобы вернуться");
             solve.text = "Сбросить";
         } else {
             cancelTask();

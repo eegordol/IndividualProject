@@ -1,6 +1,8 @@
 package panels;
 
+import app.Circle;
 import app.Point;
+import app.Ray;
 import app.Task;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dialogs.PanelSelectFile;
@@ -60,22 +62,10 @@ public class PanelRendering extends GridPanel {
                 new Vector2d(-10.0, -10.0), new Vector2d(10.0, 10.0)
         );
         // создаём задачу без точек
-        task = new Task(cs, new ArrayList<>());
+        task = new Task(cs, new ArrayList<Circle>(), new ArrayList<Ray>());
         // добавляем в нё 10 случайных
-        task.addRandomPoints(10);
-
-        // создаём массив случайных точек
-        ArrayList<Point> points = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            // получаем случайное множество
-            Point.PointSet pointSet = ThreadLocalRandom.current().nextBoolean() ?
-                    Point.PointSet.FIRST_SET : Point.PointSet.SECOND_SET;
-            // добавляем точку в случайном месте ОСК в указанное множество
-            points.add(new Point(cs.getRandomCoords(), pointSet));
-        }
-        task = new Task(cs, points);
+        task.addRandomObjects(10);
         fpsStats = new Stats();
-
     }
 
 

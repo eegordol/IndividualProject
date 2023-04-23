@@ -43,13 +43,13 @@ public class Colors {
      */
     public static final int TASK_GRID_COLOR = Misc.getColor(64, 255, 255, 255);
     /**
-     * Цвет пересечения
+     * Цвет луча
      */
-    public static final int CROSSED_COLOR = Misc.getColor(200, 0, 255, 255);
+    public static final int RAY_COLOR = Misc.getColor(200, 0, 255, 255);
     /**
-     * Цвет разности
+     * Цвет окружности
      */
-    public static final int SUBTRACTED_COLOR = Misc.getColor(200, 255, 255, 0);
+    public static final int CIRCLE_COLOR = Misc.getColor(200, 255, 255, 0);
     /**
      * цвет фона
      */
