@@ -92,6 +92,18 @@ public class Vector2d {
     }
 
     /**
+     * Умножение этот вектора на число
+     *
+     * @param a число
+     * @return результат умножения вектора на число
+     */
+    public Vector2d mul(double a) {
+        x *= a;
+        y *= a;
+        return this;
+    }
+
+    /**
      * векторное произведение в 2D
      * @param a первый вектор
      * @param b второй вектор
@@ -123,6 +135,15 @@ public class Vector2d {
      */
     public double length() {
         return Math.sqrt(x * x + y * y);
+    }
+
+    /**
+     * Получить целочисленный вектор
+     *
+     * @return целочисленный вектор
+     */
+    public Vector2i intVector() {
+        return new Vector2i((int) x, (int) y);
     }
 
     /**

@@ -7,10 +7,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import io.github.humbleui.jwm.MouseButton;
 import io.github.humbleui.skija.*;
 import lombok.Getter;
-import misc.CoordinateSystem2d;
-import misc.CoordinateSystem2i;
-import misc.Vector2d;
-import misc.Vector2i;
+import misc.*;
 import panels.PanelLog;
 
 import java.util.ArrayList;
@@ -233,37 +230,101 @@ public class Task {
      */
     private void renderTask(Canvas canvas, CoordinateSystem2i windowCS) {
         canvas.save();
+
         // создаём перо
         try (var paint = new Paint()) {
-            for (Ray ray : rays) {
-                paint.setColor(RAY_COLOR);
-
-                // y-координату разворачиваем, потому что у СК окна ось y направлена вниз,
-                // а в классическом представлении - вверх
-                Vector2i windowPos1 = windowCS.getCoords(ray.getP1().x, ray.getP1().y, ownCS);
-                // рисуем точку
-                canvas.drawRect(Rect.makeXYWH(windowPos1.x - POINT_SIZE, windowPos1.y - POINT_SIZE, POINT_SIZE * 2, POINT_SIZE * 2), paint);
-
-                Vector2i windowPos2 = windowCS.getCoords(ray.getP2().x, ray.getP2().y, ownCS);
-                // рисуем точку
-                canvas.drawRect(Rect.makeXYWH(windowPos2.x - POINT_SIZE, windowPos2.y - POINT_SIZE, POINT_SIZE * 2, POINT_SIZE * 2), paint);
-            }
-
-            for (Circle circle : circles) {
-                paint.setColor(CIRCLE_COLOR);
-
-                // y-координату разворачиваем, потому что у СК окна ось y направлена вниз,
-                // а в классическом представлении - вверх
-                Vector2i windowCenter = windowCS.getCoords(circle.getCenter().x, circle.getCenter().y, ownCS);
-                Vector2i windowPos=windowCS.getCoords(circle.getCenter().x+ circle.getRadius(), circle.getCenter().y, ownCS);
-                float windowLength = (float)Vector2i.subtract(windowCenter, windowPos).length();
-
-                // рисуем окружность
-                canvas.drawCircle(windowCenter.x, windowCenter.y, windowLength, paint);
-            }
+            renderRays(canvas, windowCS, paint);
+            renderCircles(canvas, windowCS, paint);
         }
         canvas.restore();
     }
+
+    private void renderCircles(Canvas canvas, CoordinateSystem2i windowCS, Paint paint) {
+        // кол-во дуг
+        int loopCnt = 180;
+        // угол одной дуги
+        double arc = 2.0 * Math.PI / loopCnt;
+        // создаём опорных точек (на одну больше чем дуг)
+        Vector2i [] points = new Vector2i[loopCnt + 1];
+        // создаём массив координат опорных точек
+        float[] coordinates = new float[loopCnt * 4];
+
+        for (Circle circle : circles) {
+            paint.setColor(CIRCLE_COLOR);
+
+            // центр окружности
+            Vector2d center = circle.getCenter();
+            // радиус
+            double rad = circle.getRadius();
+
+            // заполняем опорные точки
+            for (int i = 0; i < loopCnt; i++) {
+                // экранные координаты
+                // y-координату разворачиваем, потому что у СК окна ось y направлена вниз,
+                // а в классическом представлении - вверх
+                points[i] = windowCS.getCoords(center.x + rad * Math.cos(arc * i),
+                        -(center.y + rad * Math.sin(arc * i)),
+                        ownCS);
+            }
+            points[loopCnt] = points[0];
+
+            // заполняем координаты
+            for (int i = 0; i < loopCnt; i++) {
+                // x координата первой точки
+                coordinates[i * 4] = points[i].x;
+                // y координата первой точки
+                coordinates[i * 4 + 1] = points[i].y;
+
+                // x координата второй точки
+                coordinates[i * 4 + 2] = points[i+1].x;;
+                // y координата второй точки
+                coordinates[i * 4 + 3] = points[i+1].y;
+            }
+            // рисуем линии
+            canvas.drawLines(coordinates, paint);
+        }
+    }
+
+    private void renderRays(Canvas canvas, CoordinateSystem2i windowCS, Paint paint) {
+        // получаем максимальную длину отрезка на экране, как длину диагонали координатной области
+        // чтобы рисовать лучи, начинающиеся за видимой частью экрана пока умножем на 10
+        double maxDistance = 10.0 * getOwnCS().getSize().length();
+
+        for (Ray ray : rays) {
+            paint.setColor(RAY_COLOR);
+
+            Vector2d pA = ray.getP1();
+            Vector2d pB = ray.getP2();
+
+            // отрезок AB
+            Vector2d AB = Vector2d.subtract(pB, pA);
+            // создаём вектор направления для рисования условно бесконечной полосы
+            Vector2d direction = AB.normalized().rotate(Math.PI / 2).mul(maxDistance);
+
+            // получаем точки рисования
+            Vector2d p3 = Vector2d.sum(pA, direction);
+            Vector2d p4 = Vector2d.sum(pB, direction);
+
+            // экранные координаты
+            // y-координату разворачиваем, потому что у СК окна ось y направлена вниз,
+            // а в классическом представлении - вверх
+            Vector2i p1i = windowCS.getCoords(pA.x, -pA.y, ownCS);
+            Vector2i p2i = windowCS.getCoords(pB.x, -pB.y, ownCS);
+            Vector2i p3i = windowCS.getCoords(p3.x, -p3.y, ownCS);
+            Vector2i p4i = windowCS.getCoords(p4.x, -p4.y, ownCS);
+
+            // рисуем отрезки
+            canvas.drawLine(p1i.x, p1i.y, p2i.x, p2i.y, paint);
+            canvas.drawLine(p1i.x, p1i.y, p3i.x, p3i.y, paint);
+            canvas.drawLine(p2i.x, p2i.y, p4i.x, p4i.y, paint);
+            // задаём цвет точки
+            paint.setColor(RAY_POINT_COLOR);
+            // рисуем исходные точки
+            canvas.drawRRect(RRect.makeXYWH(p1i.x - POINT_SIZE, p1i.y - POINT_SIZE, POINT_SIZE * 2, POINT_SIZE * 2, 4), paint);
+            canvas.drawRRect(RRect.makeXYWH(p2i.x - POINT_SIZE, p2i.y - POINT_SIZE, POINT_SIZE * 2, POINT_SIZE * 2, 4), paint);
+        }
+    }
+
     /**
      * Рисование
      *
@@ -331,6 +392,11 @@ public class Task {
     }
 
 
+    /**
+     * Добавляем луч
+     * @param p1 первая точка
+     * @param p2 вторая точка
+     */
     public void addRay(Vector2d p1, Vector2d p2) {
         solved = false;
         Ray ray = new Ray(p1, p2);
@@ -338,6 +404,11 @@ public class Task {
         PanelLog.info("луч " + ray + " добавлена");
     }
 
+    /**
+     * Добавляем окружность
+     * @param center центр окружности
+     * @param point любая точка на окружности
+     */
     public void addCircle(Vector2d center, Vector2d point) {
         solved = false;
         Circle circle = new Circle(center, point);

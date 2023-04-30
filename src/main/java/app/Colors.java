@@ -47,6 +47,10 @@ public class Colors {
      */
     public static final int RAY_COLOR = Misc.getColor(200, 0, 255, 255);
     /**
+     * Цвет точки луча
+     */
+    public static final int RAY_POINT_COLOR = Misc.getColor(200, 255, 0, 0);
+    /**
      * Цвет окружности
      */
     public static final int CIRCLE_COLOR = Misc.getColor(200, 255, 255, 0);
