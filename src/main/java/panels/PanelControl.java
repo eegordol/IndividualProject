@@ -162,18 +162,18 @@ public class PanelControl extends GridPanel {
                 FIELD_TEXT_COLOR, true);
         inputs.add(cntField);
 
-        Button addPoints = new Button(
+        Button addObjects = new Button(
                 window, false, backgroundColor, PANEL_PADDING,
                 localGridWidth, localGridHeight, 3, 5, 3, 1, "Добавить\nслучайные объекты",
                 true, true);
-        addPoints.setOnClick(() -> {
+        addObjects.setOnClick(() -> {
             // если числа введены верно
             if (!cntField.hasValidIntValue()) {
                 PanelLog.warning("кол-во точек указано неверно");
             } else
                 PanelRendering.task.addRandomObjects(cntField.intValue());
         });
-        buttons.add(addPoints);
+        buttons.add(addObjects);
         // управление
         Button load = new Button(
                 window, false, backgroundColor, PANEL_PADDING,

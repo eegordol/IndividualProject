@@ -2,6 +2,7 @@ package app;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import misc.Misc;
 import misc.Vector2d;
 
 public class Circle {
@@ -49,6 +50,16 @@ public class Circle {
      */
     public double getRadius() {
         return radius;
+    }
+
+    /**
+     * Проверяет, что точка принадлежит кругу
+     * @param p тестируемая точка
+     * @return true если точка принадлежит кругу
+     */
+    public boolean contains(Vector2d p) {
+        double dist = Vector2d.subtract(p, getCenter()).length();
+        return dist < getRadius() + 1e-10;
     }
 
     /**

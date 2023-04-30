@@ -61,6 +61,31 @@ public class Misc {
     }
 
     /**
+     * Возвращает знаковое расстояние от приямой, заданной точками p1 и p2 до точки x.
+     * Положительное, если x слева от приямой от p1 к p2
+     * @param p1 "начальная" точка приямой
+     * @param p2 "конечная" точка приямой
+     * @param x тестируемая точка
+     * @return знаковое расстояние от приямой
+     */
+    public static double signedDistanceToLine(Vector2d p1, Vector2d p2, Vector2d x) {
+        Vector2d ort = Vector2d.subtract(p2, p1).normalized();
+        Vector2d toPoint = Vector2d.subtract(x, p1);
+        return Vector2d.mulvec(ort, toPoint);
+    }
+
+    /**
+     * Возвращает true если точка x лежит на или слева от ориентированной приямой, заданной точками p1 и p2.
+     * @param p1 "начальная" точка приямой
+     * @param p2 "конечная" точка приямой
+     * @param x тестируемая точка
+     * @return true если точка x лежит на или слева от ориентированной приямой, заданной точками p1 и p2.
+     */
+    public static boolean halfPlaneContainsPoint(Vector2d p1, Vector2d p2, Vector2d x) {
+        return Misc.signedDistanceToLine(p1, p2, x) > -1e-10;
+    }
+
+    /**
      * Запрещаем вызов конструктора
      */
     private Misc() {

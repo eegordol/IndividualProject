@@ -143,12 +143,11 @@ public class Task {
         if (lastWindowCS == null) return;
         // получаем положение на экране
         Vector2d taskPos = ownCS.getCoords(pos, lastWindowCS);
-        // если левая кнопка мыши, добавляем в первое множество
+        // если левая кнопка мыши, добавляем луч
         if (mouseButton.equals(MouseButton.PRIMARY)) {
-           // addPoint(taskPos, Point.PointSet.FIRST_SET);
-            // если правая, то во второе
+            // TODO добавляем луч
         } else if (mouseButton.equals(MouseButton.SECONDARY)) {
-            //addPoint(taskPos, Point.PointSet.SECOND_SET);
+            // TODO добавляем окружность
         }
     }
 
@@ -158,9 +157,7 @@ public class Task {
      * @param cnt кол-во случайных точек
      */
     public void addRandomObjects(int cnt) {
-        // если создавать точки с полностью случайными координатами,
-        // то вероятность того, что они совпадут крайне мала
-        // поэтому нужно создать вспомогательную малую целочисленную ОСК
+        // создаем вспомогательную малую целочисленную ОСК
         // для получения случайной точки мы будем запрашивать случайную
         // координату этой решётки (их всего 30х30=900).
         // после нам останется только перевести координаты на решётке
@@ -257,9 +254,12 @@ public class Task {
 
                 // y-координату разворачиваем, потому что у СК окна ось y направлена вниз,
                 // а в классическом представлении - вверх
-                Vector2i windowPos = windowCS.getCoords(circle.getCenter().x, circle.getCenter().y, ownCS);
-                // рисуем точку
-                canvas.drawRect(Rect.makeXYWH(windowPos.x - POINT_SIZE, windowPos.y - POINT_SIZE, POINT_SIZE * 2, POINT_SIZE * 2), paint);
+                Vector2i windowCenter = windowCS.getCoords(circle.getCenter().x, circle.getCenter().y, ownCS);
+                Vector2i windowPos=windowCS.getCoords(circle.getCenter().x+ circle.getRadius(), circle.getCenter().y, ownCS);
+                float windowLength = (float)Vector2i.subtract(windowCenter, windowPos).length();
+
+                // рисуем окружность
+                canvas.drawCircle(windowCenter.x, windowCenter.y, windowLength, paint);
             }
         }
         canvas.restore();

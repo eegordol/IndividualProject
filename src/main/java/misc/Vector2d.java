@@ -10,7 +10,7 @@ public class Vector2d {
     /**
      * x - координата вектора
      */
-    public double x;
+    public  double x;
     /**
      * y - координата вектора
      */
@@ -92,6 +92,16 @@ public class Vector2d {
     }
 
     /**
+     * векторное произведение в 2D
+     * @param a первый вектор
+     * @param b второй вектор
+     * @return знаковое значение векторного произведения (координата z)
+     */
+    public static double mulvec(Vector2d a, Vector2d b)
+    {
+        return a.x * b.y - a.y * b.x;
+    }
+    /**
      * Получить случайное значение в заданном диапазоне [min,max)
      *
      * @param min нижняя граница
@@ -150,6 +160,17 @@ public class Vector2d {
     }
 
     /**
+     * Поворет вектора на угол
+     * @param angle уго в радианах против часовой
+     * @return пеовренутый вектор
+     */
+    public Vector2d rotate(double angle) {
+        double x0 = x * Math.cos(angle) - y * Math.sin(angle);
+        double y0 = x * Math.sin(angle) + y * Math.cos(angle);
+        return new Vector2d(x0, y0);
+    }
+
+    /**
      * Получить хэш-код объекта
      *
      * @return хэш-код объекта
@@ -165,4 +186,12 @@ public class Vector2d {
         return result;
     }
 
+    /**
+     * Нормализованный вектор от данного
+     * @return Нормализованный вектор от данного
+     */
+    public Vector2d normalized() {
+        double length = length();
+        return new Vector2d(x / length, y / length);
+    }
 }

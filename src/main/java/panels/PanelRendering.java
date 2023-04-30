@@ -1,7 +1,6 @@
 package panels;
 
 import app.Circle;
-import app.Point;
 import app.Ray;
 import app.Task;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,7 +18,6 @@ import misc.Vector2d;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.concurrent.ThreadLocalRandom;
 
 import static app.Fonts.FONT12;
 
