@@ -245,10 +245,6 @@ public class Application implements Consumer<Event> {
             window.requestFrame();
         }
 
-        // передаём события на обработку панелям
-        panelControl.accept(e);
-        panelRendering.accept(e);
-        panelLog.accept(e);
         switch (currentMode) {
             case INFO -> panelInfo.accept(e);
             case FILE -> panelSelectFile.accept(e);
